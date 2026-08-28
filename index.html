@@ -219,6 +219,27 @@
     border:1px solid var(--line); border-radius:6px; font-size:13px; font-family:inherit;
     background:var(--paper, #fff);
   }
+  .filter-search-input{ margin:0 0 10px; }
+  .filter-accordion-section{ border-bottom:1px solid var(--line); }
+  .filter-accordion-section:last-child{ border-bottom:none; }
+  .filter-accordion-header{
+    display:flex; align-items:center; justify-content:space-between; width:100%;
+    padding:9px 2px; background:none; border:none; cursor:pointer; text-align:left;
+    font-family:inherit; font-size:13px; font-weight:600; color:var(--ink);
+  }
+  .filter-accordion-header:hover{ color:var(--ink); opacity:.75; }
+  .filter-accordion-count{
+    font-family:var(--font-mono); font-size:10.5px; color:var(--ink-soft); font-weight:400; margin-left:6px;
+  }
+  .filter-accordion-header .chevron{
+    font-size:10px; color:var(--ink-soft); transition:transform .15s; margin-left:auto; padding-left:8px;
+  }
+  .filter-accordion-header.open .chevron{ transform:rotate(90deg); }
+  .filter-accordion-body{ display:none; padding:2px 2px 12px; }
+  .filter-accordion-body.open{ display:flex; flex-wrap:wrap; gap:6px; }
+  .filter-accordion-empty{ font-size:11.5px; color:var(--ink-soft); padding:2px 2px 10px; }
+  .filter-accordion-section.has-match .filter-accordion-header{ color:var(--ink); }
+  .filter-accordion-section.no-match{ display:none; }
   .site-list{ list-style:none; margin:0; padding:0; }
   .site-list li{
     padding:8px 9px; border-radius:4px; cursor:pointer; font-size:12.5px;
@@ -460,8 +481,8 @@
       </div>
       <div class="sidebar-section">
         <h3 id="filter-heading">特徴で絞り込む</h3>
-        <select id="filter-type" class="filter-type-select"></select>
-        <div class="chips" id="filter-chips"></div>
+        <input type="text" id="filter-search" class="site-search-input filter-search-input" placeholder="タグを検索..." aria-label="filter search" />
+        <div id="filter-accordion"></div>
       </div>
     </aside>
     <main class="stage">
@@ -505,7 +526,7 @@ const STR = {
     tagline:'地球を知る旅に出かけよう',
     tabMap:'地図で見る', tabList:'リストで見る',
     moodHeading:'気分で選ぶ',
-    filterHeading:'特徴で絞り込む', sitelistHeading:'ジオサイト一覧', siteSearchPlaceholder:'サイト名で検索...',
+    filterHeading:'特徴で絞り込む', filterSearchPlaceholder:'タグを検索...', sitelistHeading:'ジオサイト一覧', siteSearchPlaceholder:'サイト名で検索...',
     countrySearchAll:'すべての国',
     hintMap:'マーカーをクリックすると詳細が開きます',
     legend:{volcanic:'火山', glacial:'氷河', sediment:'堆積・カルスト', era:'地質年代'},
@@ -519,14 +540,14 @@ const STR = {
     plateToggleLabel:'テクトニックプレート',
     eraChartBtnLabel:'地質年代表', eraChartTitle:'地質年代表',
     aboutBtnLabel:'GeoTravel Atlasとは？', aboutTitle:'GeoTravel Atlasとは？',
-    aboutDesc:'<strong>GeoTravel Atlas</strong>は、旅先の風景を地球の歴史として読み解くためのアトラスです。地形や岩石、地質年代、地球を形づくるプロセスをたどりながら、世界中の壮大な景観や、その土地ならではの物語を新しい視点で発見できます。地図や時間軸、テーマ別のフィルターを使えば、それぞれの場所がどのようにつながっているのかが見えてきます。次の旅では、景色の成り立ちに目を向けてみませんか。旅を重ねるたびに、46億年が生み出した地球の面白さが、きっと見えてくるでしょう。<br><br>現在、世界各地のジオスポットを100件以上収録しています。これからも、新しい発見とともに<strong>GeoTravel Atlas</strong>は成長していきます。',
+    aboutDesc:'<strong>GeoTravel Atlas</strong>は、旅先の風景を地球の歴史として読み解くためのアトラスです。地形や岩石、地質年代、地球を形づくるプロセスをたどりながら、世界中の壮大な景観や、その土地ならではの物語を新しい視点で発見できます。地図や時間軸、テーマ別のフィルターを使えば、それぞれの場所がどのようにつながっているのかが見えてきます。次の旅では、景色の成り立ちに目を向けてみませんか。旅を重ねるたびに、46億年が生み出した地球の面白さが、きっと見えてくるでしょう。<br><br>現在、世界各地のジオスポットを500件以上収録しています。これからも、新しい発見とともに<strong>GeoTravel Atlas</strong>は成長していきます。',
     eraChartIntro:'地球の歴史46億年のうち、先カンブリア時代だけで9割近くを占めます。「顕生代」(複雑な生物が栄えた時代)をズームすると、ジュラ紀や白亜紀といった名前を、実際の長さの比率で見ることができます。白い点が付いている時代には、登録済みのジオサイトがあります。クリックすると絞り込めます。',
   },
   en: {
     tagline:'Set out to discover the Earth.',
     tabMap:'Map View', tabList:'List View',
     moodHeading:'What Are You in the Mood For?',
-    filterHeading:'Filter by Feature', sitelistHeading:'Geosites', siteSearchPlaceholder:'Search by site name...',
+    filterHeading:'Filter by Feature', filterSearchPlaceholder:'Search tags...', sitelistHeading:'Geosites', siteSearchPlaceholder:'Search by site name...',
     countrySearchAll:'All Countries',
     hintMap:'Click a marker to see details',
     legend:{volcanic:'Volcanic', glacial:'Glacial', sediment:'Sedimentary / Karst', era:'Geological Era'},
@@ -540,14 +561,14 @@ const STR = {
     plateToggleLabel:'Tectonic Plates',
     eraChartBtnLabel:'Time Scale', eraChartTitle:'Geological Time Scale',
     aboutBtnLabel:'What is GeoTravel Atlas?', aboutTitle:'What is GeoTravel Atlas?',
-    aboutDesc:"<strong>GeoTravel Atlas</strong> is an atlas for reading the landscapes you encounter on your travels as chapters in Earth's history. Explore spectacular landscapes and the unique stories behind them through landforms, rocks, geological ages, and the processes that have shaped our planet. With interactive maps, geological timelines, and thematic filters, you'll begin to see how remarkable places around the world are connected. On your next journey, look beyond the scenery and ask yourself why this landscape came to be. With every journey, you'll discover more of the fascinating Earth shaped over 4.6 billion years.<br><br><strong>GeoTravel Atlas</strong> currently features over 100 geospots from around the world. The atlas will continue to grow with every new discovery.",
+    aboutDesc:"<strong>GeoTravel Atlas</strong> is an atlas for reading the landscapes you encounter on your travels as chapters in Earth's history. Explore spectacular landscapes and the unique stories behind them through landforms, rocks, geological ages, and the processes that have shaped our planet. With interactive maps, geological timelines, and thematic filters, you'll begin to see how remarkable places around the world are connected. On your next journey, look beyond the scenery and ask yourself why this landscape came to be. With every journey, you'll discover more of the fascinating Earth shaped over 4.6 billion years.<br><br><strong>GeoTravel Atlas</strong> currently features over 500 geospots from around the world. The atlas will continue to grow with every new discovery.",
     eraChartIntro:"Of Earth's 4.6-billion-year history, the Precambrian alone accounts for nearly 90%. Zoom into the 'Phanerozoic' (the era of complex life) to see periods like the Jurassic or Cretaceous at their true relative lengths. Eras with a white dot already have registered geosites — click one to filter.",
   },
   de: {
     tagline:'Mach dich auf, die Erde zu entdecken.',
     tabMap:'Kartenansicht', tabList:'Listenansicht',
     moodHeading:'Worauf hättest du Lust?',
-    filterHeading:'Nach Merkmal filtern', sitelistHeading:'Geoparks', siteSearchPlaceholder:'Nach Namen suchen...',
+    filterHeading:'Nach Merkmal filtern', filterSearchPlaceholder:'Tags durchsuchen...', sitelistHeading:'Geoparks', siteSearchPlaceholder:'Nach Namen suchen...',
     countrySearchAll:'Alle Länder',
     hintMap:'Klicken Sie auf einen Marker für Details',
     legend:{volcanic:'Vulkanisch', glacial:'Glazial', sediment:'Sedimentär / Karst', era:'Erdzeitalter'},
@@ -561,7 +582,7 @@ const STR = {
     plateToggleLabel:'Tektonische Platten',
     eraChartBtnLabel:'Zeitskala', eraChartTitle:'Geologische Zeitskala',
     aboutBtnLabel:'Was ist GeoTravel Atlas?', aboutTitle:'Was ist GeoTravel Atlas?',
-    aboutDesc:'<strong>GeoTravel Atlas</strong> ist ein Atlas, der Landschaften auf Reisen als Kapitel der Erdgeschichte sichtbar macht. Entdecke beeindruckende Landschaften und die einzigartigen Geschichten hinter ihnen – durch Landschaftsformen, Gesteine, Erdzeitalter und die Prozesse, die unseren Planeten geformt haben. Mit Karten, geologischen Zeitleisten und thematischen Filtern wird sichtbar, wie besondere Orte auf der ganzen Welt miteinander verbunden sind. Blicke auf deiner nächsten Reise über die Landschaft hinaus und frage dich, wie sie entstanden ist. Mit jeder Reise wirst du die faszinierende Erde, die sich über 4,6 Milliarden Jahre entwickelt hat, ein Stück besser verstehen.<br><br><strong>GeoTravel Atlas</strong> umfasst derzeit über 100 Geospots aus aller Welt. Mit jeder neuen Entdeckung wächst auch dieser Atlas weiter.',
+    aboutDesc:'<strong>GeoTravel Atlas</strong> ist ein Atlas, der Landschaften auf Reisen als Kapitel der Erdgeschichte sichtbar macht. Entdecke beeindruckende Landschaften und die einzigartigen Geschichten hinter ihnen – durch Landschaftsformen, Gesteine, Erdzeitalter und die Prozesse, die unseren Planeten geformt haben. Mit Karten, geologischen Zeitleisten und thematischen Filtern wird sichtbar, wie besondere Orte auf der ganzen Welt miteinander verbunden sind. Blicke auf deiner nächsten Reise über die Landschaft hinaus und frage dich, wie sie entstanden ist. Mit jeder Reise wirst du die faszinierende Erde, die sich über 4,6 Milliarden Jahre entwickelt hat, ein Stück besser verstehen.<br><br><strong>GeoTravel Atlas</strong> umfasst derzeit über 500 Geospots aus aller Welt. Mit jeder neuen Entdeckung wächst auch dieser Atlas weiter.',
     eraChartIntro:'Von den 4,6 Milliarden Jahren der Erdgeschichte macht allein das Präkambrium fast 90% aus. Zoomen Sie ins „Phanerozoikum" (das Zeitalter komplexen Lebens), um Perioden wie Jura oder Kreide in ihrer wahren relativen Länge zu sehen. Zeitalter mit einem weißen Punkt haben bereits registrierte Geoparks — klicken Sie darauf, um zu filtern.',
   }
 };
@@ -11564,9 +11585,10 @@ function showEraDetail(key){
   if (count > 0) {
     document.getElementById('era-detail-filter-btn').addEventListener('click', ()=>{
       activePropertyType = 'era';
-      filterTypeEl.value = 'era';
+      expandedCategory = 'era';
       activeFilters.clear();
       activeFilters.add(key);
+      filterSearchTerm = ''; filterSearchEl.value = '';
       renderFilterChips();
       renderAll(); applyFilterToMap();
       closeEraChart();
@@ -11611,27 +11633,12 @@ const FOSSIL_SORT_ORDER = ['Ammonite','Crinoid','Marine Reptile','Dinosaur','Ich
 const FIELD_MAP = { landform:'landforms', rockType:'rockTypes', process:'process', era:'era', fossil:'fossils', tectonicPlate:'tectonicPlates', protection:'protection' };
 const FILTER_TYPE_KEYS = ['landform','rockType','process','era','fossil','protection'];
 let activePropertyType = 'landform';
+let expandedCategory = 'landform';
+let filterSearchTerm = '';
 
-const filterTypeEl = document.getElementById('filter-type');
-FILTER_TYPE_KEYS.forEach(key=>{
-  const opt = document.createElement('option');
-  opt.value = key;
-  filterTypeEl.appendChild(opt);
-});
-filterTypeEl.value = activePropertyType;
-filterTypeEl.addEventListener('change', (e)=>{
-  activePropertyType = e.target.value;
-  activeFilters.clear();
-  renderFilterChips();
-  renderAll();
-  applyFilterToMap();
-});
-
-const chipsEl = document.getElementById('filter-chips');
-function renderFilterChips(){
-  chipsEl.innerHTML = '';
-  const field = FIELD_MAP[activePropertyType];
-  const values = [...new Set(SITES.flatMap(s => s[field] || []))].sort((a,b)=>{
+function sortedValuesFor(field){
+  const values = [...new Set(SITES.flatMap(s => s[field] || []))];
+  return values.sort((a,b)=>{
     if (field==='era') return ERA_SORT_ORDER.indexOf(a) - ERA_SORT_ORDER.indexOf(b);
     if (LANG==='ja') {
       if (field==='fossils') return FOSSIL_SORT_ORDER.indexOf(a) - FOSSIL_SORT_ORDER.indexOf(b);
@@ -11640,25 +11647,76 @@ function renderFilterChips(){
     }
     return displayFeature(a).localeCompare(displayFeature(b), LANG);
   });
-  values.forEach(val=>{
-    const el = document.createElement('div');
-    el.className = 'chip' + (activeFilters.has(val) ? ' active' : '');
-    el.innerHTML = `<span class="chip-label">${displayFeature(val)}</span><span class="chip-info" title="${pick('説明を見る','View description','Beschreibung ansehen')}">ⓘ</span>`;
-    el.addEventListener('click', ()=>{
-      if (activeFilters.has(val)) activeFilters.delete(val); else activeFilters.add(val);
-      el.classList.toggle('active');
-      renderAll();
-      applyFilterToMap();
+}
+
+function makeChip(key, val){
+  const el = document.createElement('div');
+  el.className = 'chip' + (activePropertyType===key && activeFilters.has(val) ? ' active' : '');
+  el.innerHTML = `<span class="chip-label">${displayFeature(val)}</span><span class="chip-info" title="${pick('説明を見る','View description','Beschreibung ansehen')}">ⓘ</span>`;
+  el.addEventListener('click', ()=>{
+    if (activePropertyType !== key) { activePropertyType = key; activeFilters.clear(); }
+    if (activeFilters.has(val)) activeFilters.delete(val); else activeFilters.add(val);
+    renderFilterAccordion();
+    renderAll();
+    applyFilterToMap();
+  });
+  el.querySelector('.chip-info').addEventListener('click', (e)=>{
+    e.stopPropagation();
+    const feat = FEATURES.find(f=>f.name===val);
+    if (feat) showFeatureDetail(feat);
+  });
+  return el;
+}
+
+const accordionEl = document.getElementById('filter-accordion');
+const filterSearchEl = document.getElementById('filter-search');
+
+function renderFilterAccordion(){
+  accordionEl.innerHTML = '';
+  const term = filterSearchTerm.trim().toLowerCase();
+  const searching = term.length > 0;
+  FILTER_TYPE_KEYS.forEach(key=>{
+    const field = FIELD_MAP[key];
+    const allValues = sortedValuesFor(field);
+    const values = searching ? allValues.filter(v => displayFeature(v).toLowerCase().includes(term)) : allValues;
+
+    const section = document.createElement('div');
+    section.className = 'filter-accordion-section';
+    if (searching && values.length === 0) section.classList.add('no-match');
+
+    const isOpen = searching ? values.length > 0 : (expandedCategory === key);
+
+    const header = document.createElement('button');
+    header.type = 'button';
+    header.className = 'filter-accordion-header' + (isOpen ? ' open' : '');
+    header.innerHTML = `<span>${t('connectBy')[key]}<span class="filter-accordion-count">(${allValues.length})</span></span><span class="chevron">▶</span>`;
+    header.addEventListener('click', ()=>{
+      if (filterSearchTerm) { filterSearchEl.value=''; filterSearchTerm=''; }
+      expandedCategory = (expandedCategory === key) ? null : key;
+      renderFilterAccordion();
     });
-    el.querySelector('.chip-info').addEventListener('click', (e)=>{
-      e.stopPropagation();
-      const feat = FEATURES.find(f=>f.name===val);
-      if (feat) showFeatureDetail(feat);
-    });
-    chipsEl.appendChild(el);
+    section.appendChild(header);
+
+    const body = document.createElement('div');
+    body.className = 'filter-accordion-body' + (isOpen ? ' open' : '');
+    if (values.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'filter-accordion-empty';
+      empty.textContent = pick('一致するタグがありません','No matching tags','Keine passenden Tags');
+      body.appendChild(empty);
+    } else {
+      values.forEach(val => body.appendChild(makeChip(key, val)));
+    }
+    section.appendChild(body);
+    accordionEl.appendChild(section);
   });
 }
-renderFilterChips();
+filterSearchEl.addEventListener('input', (e)=>{
+  filterSearchTerm = e.target.value;
+  renderFilterAccordion();
+});
+const renderFilterChips = renderFilterAccordion;
+renderFilterAccordion();
 
 let activeMoods = new Set();
 function siteMatchesFilter(site){
@@ -12235,7 +12293,7 @@ function applyStaticText(){
   renderCountryFilterOptions();
   document.getElementById('hint').textContent = t('hintMap');
   document.querySelectorAll('.lang-btn').forEach(btn=>{ btn.classList.toggle('active', btn.dataset.lang === LANG); });
-  Array.from(filterTypeEl.options).forEach(opt=>{ opt.textContent = t('connectBy')[opt.value]; });
+  filterSearchEl.placeholder = t('filterSearchPlaceholder');
   renderFilterChips();
   document.getElementById('plate-toggle-label').textContent = t('plateToggleLabel');
   if (plateLayer) buildPlateLayer();
